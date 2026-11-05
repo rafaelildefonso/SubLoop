@@ -11,10 +11,13 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -60,7 +63,7 @@ fun SubLoopHeader(
     onProfile: (() -> Unit)? = null,
     trailing: (@Composable () -> Unit)? = null,
 ) {
-    Column(modifier.background(Canvas)) {
+    Column(modifier.statusBarsPadding().background(Canvas)) {
         Row(
             modifier = Modifier.fillMaxWidth().height(64.dp).padding(horizontal = 14.dp),
             verticalAlignment = Alignment.CenterVertically,
@@ -151,7 +154,12 @@ fun EmptyState(
 
 @Composable
 fun SubLoopBottomBar(selected: AppTab, onSelect: (AppTab) -> Unit) {
-    NavigationBar(containerColor = Color.White, tonalElevation = 8.dp) {
+    NavigationBar(
+        modifier = Modifier.navigationBarsPadding(),
+        containerColor = Color.White,
+        tonalElevation = 8.dp,
+        windowInsets = WindowInsets(0, 0, 0, 0),
+    ) {
         AppTab.entries.forEach { tab ->
             val icon = when (tab) {
                 AppTab.Home -> Icons.Rounded.Home

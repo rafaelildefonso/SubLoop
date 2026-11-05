@@ -1,5 +1,6 @@
 package com.subloop.userinterface.screens
 
+import android.app.DatePickerDialog
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -37,6 +38,7 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Switch
 import androidx.compose.material3.SwitchDefaults
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -48,6 +50,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
@@ -57,6 +60,8 @@ import com.subloop.userinterface.theme.Ink
 import com.subloop.userinterface.theme.Muted
 import com.subloop.userinterface.theme.Soft
 import com.subloop.viewmodel.SubscriptionViewModel
+import java.util.Calendar
+import java.util.Locale
 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
@@ -72,6 +77,35 @@ fun AddSubscriptionScreen(
     var category by remember { mutableStateOf("Streaming") }
     var alertEnabled by remember { mutableStateOf(true) }
     val saveState by viewModel.saveState.collectAsState()
+    val context = LocalContext.current
+    val calendar = remember { Calendar.getInstance() }
+    val minimumDate = remember {
+        Calendar.getInstance().apply {
+            set(Calendar.HOUR_OF_DAY, 0)
+            set(Calendar.MINUTE, 0)
+            set(Calendar.SECOND, 0)
+            set(Calendar.MILLISECOND, 0)
+        }.timeInMillis
+    }
+    val datePicker = remember(context) {
+        DatePickerDialog(
+            context,
+            { _, year, month, dayOfMonth ->
+                dueDate = String.format(
+                    Locale.forLanguageTag("pt-BR"),
+                    "%02d/%02d/%04d",
+                    dayOfMonth,
+                    month + 1,
+                    year,
+                )
+            },
+            calendar.get(Calendar.YEAR),
+            calendar.get(Calendar.MONTH),
+            calendar.get(Calendar.DAY_OF_MONTH),
+        ).apply {
+            datePicker.minDate = minimumDate
+        }
+    }
 
     LaunchedEffect(saveState.savedId) {
         if (saveState.savedId != null) {
@@ -166,18 +200,26 @@ fun AddSubscriptionScreen(
             }
             Spacer(Modifier.height(14.dp))
 
-            FieldLabel("Próximo Vencimento", "DD/MM/AAAA")
-            OutlinedTextField(
-                value = dueDate,
-                onValueChange = { dueDate = formatDateInput(it) },
-                placeholder = { Text("DD/MM/AAAA") },
-                trailingIcon = { Icon(Icons.Rounded.CalendarMonth, null) },
+            FieldLabel("Próximo Vencimento", "Escolha no calendário")
+            Surface(
+                onClick = { datePicker.show() },
                 modifier = Modifier.fillMaxWidth(),
-                singleLine = true,
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                 shape = RoundedCornerShape(8.dp),
-                colors = fieldColors(),
-            )
+                color = Soft,
+            ) {
+                Row(
+                    Modifier.fillMaxWidth().height(56.dp).padding(horizontal = 16.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    Text(
+                        text = dueDate.ifBlank { "Selecionar data" },
+                        modifier = Modifier.weight(1f),
+                        style = MaterialTheme.typography.bodyLarge,
+                        color = if (dueDate.isBlank()) Muted else Ink,
+                    )
+                    Icon(Icons.Rounded.CalendarMonth, "Abrir calendário", tint = Muted)
+                }
+            }
             Spacer(Modifier.height(14.dp))
 
             FieldLabel("Categoria")
@@ -265,13 +307,3 @@ private fun chipColors() = FilterChipDefaults.filterChipColors(
     containerColor = Soft,
     labelColor = Muted,
 )
-
-private fun formatDateInput(value: String): String {
-    val digits = value.filter(Char::isDigit).take(8)
-    return buildString {
-        digits.forEachIndexed { index, char ->
-            if (index == 2 || index == 4) append('/')
-            append(char)
-        }
-    }
-}

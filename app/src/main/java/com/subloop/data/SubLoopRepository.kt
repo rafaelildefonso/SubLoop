@@ -10,6 +10,7 @@ class SubLoopRepository(
     private val subscriptionDao: SubscriptionDao,
     private val sessionManager: SessionManager,
     private val exchangeRateApi: ExchangeRateApi,
+    private val notificationScheduler: NotificationScheduler,
 ) {
     val currentUserId: Long? get() = sessionManager.currentUserId
 
@@ -61,8 +62,8 @@ class SubLoopRepository(
         nextDueDate: String,
         category: String,
         alertEnabled: Boolean,
-    ): Long = subscriptionDao.insert(
-        SubscriptionEntity(
+    ): Long {
+        val subscription = SubscriptionEntity(
             userId = userId,
             name = name.trim(),
             amountCents = amountCents,
@@ -70,11 +71,25 @@ class SubLoopRepository(
             nextDueDate = nextDueDate,
             category = category,
             alertEnabled = alertEnabled,
-        ),
-    )
+        )
+        val id = subscriptionDao.insert(subscription)
+        notificationScheduler.schedule(subscription.copy(id = id))
+        return id
+    }
 
-    suspend fun update(subscription: SubscriptionEntity) = subscriptionDao.update(subscription)
-    suspend fun delete(subscription: SubscriptionEntity) = subscriptionDao.delete(subscription)
+    suspend fun update(subscription: SubscriptionEntity) {
+        subscriptionDao.update(subscription)
+        notificationScheduler.schedule(subscription)
+    }
+
+    suspend fun delete(subscription: SubscriptionEntity) {
+        notificationScheduler.cancel(subscription.id)
+        subscriptionDao.delete(subscription)
+    }
+
+    suspend fun rescheduleNotifications(userId: Long) {
+        subscriptionDao.getForUser(userId).forEach(notificationScheduler::schedule)
+    }
 
     suspend fun loadUsdBrlRate(): Result<Pair<Double, String>> = runCatching {
         val response = exchangeRateApi.latest()

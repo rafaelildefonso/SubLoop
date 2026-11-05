@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.safeDrawingPadding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -116,7 +117,7 @@ private fun AuthLayout(
     subtitle: String,
     content: @Composable () -> Unit,
 ) {
-    Box(Modifier.fillMaxSize().background(Canvas).imePadding()) {
+    Box(Modifier.fillMaxSize().background(Canvas).safeDrawingPadding().imePadding()) {
         Column(
             Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(horizontal = 22.dp, vertical = 36.dp),
             verticalArrangement = Arrangement.Center,

@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -61,7 +62,10 @@ fun DetailScreen(
     val subscription = subscriptions.firstOrNull { it.id == subscriptionId }
     var showDeleteDialog by remember { mutableStateOf(false) }
 
-    Scaffold(topBar = { SubLoopHeader(section = "Detalhes", onBack = onBack) }) { padding ->
+    Scaffold(
+        contentWindowInsets = WindowInsets(0, 0, 0, 0),
+        topBar = { SubLoopHeader(section = "Detalhes", onBack = onBack) },
+    ) { padding ->
         if (subscription == null) {
             Box(Modifier.fillMaxSize().background(Canvas).padding(padding).padding(16.dp), contentAlignment = Alignment.Center) {
                 EmptyState(

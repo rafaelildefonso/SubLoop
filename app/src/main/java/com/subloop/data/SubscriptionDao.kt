@@ -16,6 +16,9 @@ interface SubscriptionDao {
     @Query("SELECT * FROM subscriptions WHERE id = :id AND userId = :userId LIMIT 1")
     fun observeById(id: Long, userId: Long): Flow<SubscriptionEntity?>
 
+    @Query("SELECT * FROM subscriptions WHERE userId = :userId")
+    suspend fun getForUser(userId: Long): List<SubscriptionEntity>
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insert(subscription: SubscriptionEntity): Long
 

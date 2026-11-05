@@ -38,7 +38,10 @@ A tela inicial consulta a cotação USD/BRL. Ela exibe os três estados exigidos
 - Saída pelo botão de perfil no cabeçalho
 - Dados separados pelo usuário autenticado
 - Cadastro e remoção de assinaturas
-- Alertas configuráveis
+- Alertas configuráveis com notificações reais do Android
+- Agendamento persistente pelo WorkManager, inclusive com o app fechado
+- Solicitação da permissão de notificações no Android 13 ou superior
+- Calendário nativo para escolher o vencimento, sem digitação manual da data
 - Home, Assinaturas, Adicionar e Alertas na barra inferior
 - Detalhe aberto por rota type-safe com o ID da assinatura
 - Estado vazio real: nenhuma assinatura é pré-carregada

@@ -43,6 +43,7 @@ class SubscriptionViewModel(
 
     init {
         refreshExchangeRate()
+        viewModelScope.launch { repository.rescheduleNotifications(userId) }
     }
 
     fun refreshExchangeRate() {
@@ -53,6 +54,10 @@ class SubscriptionViewModel(
                 onFailure = { ExchangeRateUiState.Error(it.message ?: "Falha ao consultar a cotação.") },
             )
         }
+    }
+
+    fun rescheduleNotifications() {
+        viewModelScope.launch { repository.rescheduleNotifications(userId) }
     }
 
     fun addSubscription(

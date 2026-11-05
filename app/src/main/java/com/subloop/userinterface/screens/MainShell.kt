@@ -1,13 +1,22 @@
 package com.subloop.userinterface.screens
 
+import android.Manifest
+import android.content.pm.PackageManager
+import android.os.Build
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
+import androidx.core.content.ContextCompat
+import androidx.compose.foundation.layout.WindowInsets
 import com.subloop.userinterface.components.SubLoopBottomBar
 import com.subloop.userinterface.components.SubLoopHeader
 import com.subloop.userinterface.navigation.AppTab
@@ -19,11 +28,13 @@ fun MainShell(
     onOpenDetail: (Long) -> Unit,
     onLogout: () -> Unit,
 ) {
+    NotificationPermissionEffect(onGranted = viewModel::rescheduleNotifications)
     var selectedTab by remember { mutableStateOf(AppTab.Home) }
     val subscriptions by viewModel.subscriptions.collectAsState()
     val exchangeRate by viewModel.exchangeRate.collectAsState()
 
     Scaffold(
+        contentWindowInsets = WindowInsets(0, 0, 0, 0),
         topBar = {
             SubLoopHeader(
                 section = when (selectedTab) {
@@ -63,6 +74,27 @@ fun MainShell(
                 onToggle = viewModel::updateAlert,
                 contentPadding = padding,
             )
+        }
+    }
+}
+
+@Composable
+private fun NotificationPermissionEffect(onGranted: () -> Unit) {
+    if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) return
+    val context = LocalContext.current
+    val launcher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestPermission(),
+        onResult = { granted -> if (granted) onGranted() },
+    )
+    LaunchedEffect(Unit) {
+        if (ContextCompat.checkSelfPermission(
+                context,
+                Manifest.permission.POST_NOTIFICATIONS,
+            ) != PackageManager.PERMISSION_GRANTED
+        ) {
+            launcher.launch(Manifest.permission.POST_NOTIFICATIONS)
+        } else {
+            onGranted()
         }
     }
 }
